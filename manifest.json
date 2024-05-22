@@ -22,16 +22,17 @@
       "css":"styles.css"
     }
   ],
-  "action":[
-    {
+  "action":{
       "default_title": "WebAnnotator",
       "default_popup": "popup.html",
       "default_icon": {
         "128": "icons/icon128.png"
       }
-    }
-  ]
-
+  },
+  "icons":{
+    "128":"icons/icon128.png"
+  }
+  
   
 }
 
