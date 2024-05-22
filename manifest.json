@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "WebAnnotator",
+  "version": "1.0",
+  "description": "Allows user to do annotations on webpages.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background":{
+      "scripts" : ["background.js"]
+  },
+  "content_scripts":[
+    {
+      "matches": "<all_urls>",
+      "js":"content.js",
+      "css":"styles.css"
+    }
+  ],
+  "action":[
+    {
+      "default_title": "WebAnnotator",
+      "default_popup": "popup.html",
+      "default_icon": {
+        "128": "icons/icon128.png"
+      }
+    }
+  ]
+
+  
+}
+
