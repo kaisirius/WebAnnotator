@@ -19,7 +19,7 @@
     {
       "matches": "<all_urls>",
       "js":"content.js",
-      "css":"styles.css"
+      "css":"popup.css"
     }
   ],
   "action":{
