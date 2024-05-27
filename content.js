@@ -47,7 +47,7 @@ function draw(e) {
   ctx.lineCap = 'round';
 
   if (currentTool === 'highlighter') {
-    ctx.globalAlpha = 0.1; // Set transparency for highlighter
+    ctx.globalAlpha = 0.05; // Set transparency for highlighter
   } else {
     ctx.globalAlpha = 1.0; // Full opacity for pen
   }
@@ -101,7 +101,7 @@ function redraw() {
   annotations.forEach(annotation => {
     ctx.strokeStyle = annotation.color;
     ctx.lineWidth = annotation.tool === 'pen' ? 2 : 10;
-    ctx.globalAlpha = annotation.tool === 'highlighter' ? 0.1 : 1.0;
+    ctx.globalAlpha = annotation.tool === 'highlighter' ? 0.05 : 1.0;
 
     ctx.beginPath();
     const path = annotation.path;
