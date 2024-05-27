@@ -1,9 +1,9 @@
-body{
+.extension_body{
+  margin: 5px;
   width: 432px;
-  height: 60px;
+  height: 60px; 
   background-color: aliceblue;
-  display: flex;
-  justify-content: center;
+  display: absolute;
 }
 .toolbar{
   display: flex;
@@ -30,6 +30,7 @@ body{
 .pen:active{
   opacity: 0.86;
 }
+
 .highlighter{
   margin-top: 10px;
   margin-left: 24px;
