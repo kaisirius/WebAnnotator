@@ -6,8 +6,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   chrome.storage.local.get(['PenStatus', 'HighlighterStatus'], (result) => {
     PenStatus = result.PenStatus || false;
     HighlighterStatus = result.HighlighterStatus || false;
+    UpdateButton();
   });
-  UpdateButton();
+  
   function UpdateButton(){
     document.getElementById('pen').style.backgroundColor = PenStatus ? '#D4D4D4' : '#FFFFFF';
     document.getElementById('highlighter').style.backgroundColor = HighlighterStatus ? '#D4D4D4' : '#FFFFFF';
