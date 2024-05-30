@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   
   function UpdateButton(){
-    document.getElementById('pen').style.backgroundColor = PenStatus ? '#D4D4D4' : '#FFFFFF';
-    document.getElementById('highlighter').style.backgroundColor = HighlighterStatus ? '#D4D4D4' : '#FFFFFF';
+    document.getElementById('pen').style.backgroundColor = PenStatus ? '#D4D4D4' : 'FFFFFF';
+    document.getElementById('highlighter').style.backgroundColor = HighlighterStatus ? '#D4D4D4' : 'FFFFFF';
   }
   
   //css will change on click
@@ -20,17 +20,17 @@ document.addEventListener('DOMContentLoaded',()=>{
     HighlighterStatus=false;
     chrome.storage.local.set({ PenStatus, HighlighterStatus });
     UpdateButton();
-    //pen event
+
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
       if (tabs.length > 0) {
         console.log("Sending 'pen' action to content script");
-        chrome.tabs.sendMessage(tabs[0].id, {action: "pen" , status: PenStatus});
+        chrome.tabs.sendMessage(tabs[0].id, {action: "pen" , status1 : HighlighterStatus,status2 : PenStatus});
       } else {
         console.error("No active tab found");
       }
     });
   });
-  //highlighter event
+
   document.getElementById('highlighter').addEventListener('click', () => {
     HighlighterStatus=!HighlighterStatus;
     PenStatus=false;
@@ -40,13 +40,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
       if (tabs.length > 0) {
         console.log("Sending 'highlighter' action to content script");
-        chrome.tabs.sendMessage(tabs[0].id, {action: "highlighter" , status : HighlighterStatus});
+        chrome.tabs.sendMessage(tabs[0].id, {action: "highlighter" , status1 : HighlighterStatus,status2 : PenStatus});
       } else {
         console.error("No active tab found");
       }
     });
   });
-  //color picker event
+
   document.getElementById('stroke-color').addEventListener('change', (event) => {
     const selectedColor=event.target.value;
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     });
   });
-  //save annotations
+
   document.getElementById('save').addEventListener('click', () => {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
       if (tabs.length > 0) {
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     });
   });
-  //undo last annotations
+
   document.getElementById('undo').addEventListener('click', () => {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
       if (tabs.length > 0) {
