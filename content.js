@@ -1,13 +1,14 @@
 console.log("KOODA IMPLEMENTATION KE LIYE MAAFI");
 
 let currentTool = null;
-let currentColor = 'yellow';
+let currentColor = '#FFFF00';
 let annotations = [];
 let highlights = [];
 let isDrawing = false;
 let currentAction = 0, lastAction = 0;
 let startX, startY, path;
 let canvas, ctx;
+let purpose = 2; 
 
 // Create and append the canvas element to the body
 function createCanvas() {
@@ -27,8 +28,8 @@ function createCanvas() {
   canvas.addEventListener('mouseup', handleMouseUp);
 
   // Load saved annotations and tool state
-  // loadAnnotations();
-  // loadToolState();
+  loadAnnotations();
+  loadToolState();
 }
 
 function handleMouseDown(e) {
@@ -110,44 +111,60 @@ function startHighlighting() {
   }
 }
 
-// function loadAnnotations() {
-//   chrome.runtime.sendMessage({ action: "loadAnnotations" }, (response) => {
-//     if (response && response.annotations) {
-//       annotations = response.annotations;
-//       highlights = response.highlights || [];
-//       redraw();
-//       console.log("Annotations loaded");
-//     } else {
-//       console.log("No annotations found");
-//     }
-//   });
-// }
+function loadAnnotations() {
+  chrome.runtime.sendMessage({ action: "loadAnnotations" }, (response) => {
+    if (response && response.annotations) {
+      annotations = response.annotations;
+      highlights = response.highlights;
+      purpose=2;
+      redraw(purpose);
+      console.log("Annotations loaded");
+    } else {
+      console.log("No annotations found");
+    }
+  });
+}
 
-// function loadToolState() {
-//   chrome.storage.local.get(['PenStatus', 'HighlighterStatus'], (result) => {
-//     if (result.PenStatus) {
-//       currentTool = 'pen';
-//       canvas.style.pointerEvents = 'auto';
-//     } else if (result.HighlighterStatus) {
-//       currentTool = 'highlighter';
-//       canvas.style.pointerEvents = 'none';
-//     } else {
-//       currentTool = null;
-//       canvas.style.pointerEvents = 'none';
-//     }
-//   });
-// }
+function loadToolState() {
+  chrome.storage.local.get(['PenStatus', 'HighlighterStatus','ColorStatus'], (result) => {
+    if (result.PenStatus) {
+      currentTool = 'pen';
+      canvas.style.pointerEvents = 'auto';
+      currentColor = result.ColorStatus;
+    } else if (result.HighlighterStatus) {
+      currentTool = 'highlighter';
+      canvas.style.pointerEvents = 'none';
+      currentColor = result.ColorStatus;
+    } else {
+      currentTool = null;
+      canvas.style.pointerEvents = 'none';
+      currentColor = result.ColorStatus;
+    }
+  });
+}
 
-function redraw() {
+function redraw(purpose) {
   console.log("Redrawing annotations");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (annotations.length > 0) {
+  
+  // highlights redraw
+  if(purpose === 2){
+    highlights.forEach(highlight => {
+      let span = document.createElement('span');
+      span.innerHTML = highlight.range;
+      span.style.backgroundColor = highlight.color;
+      span.setAttribute('highlight-id', highlight.id);
+      let bodyText = document.body.innerHTML;
+      let highlightedText = bodyText.replace(highlight.range, span.outerHTML);
+      document.body.innerHTML = highlightedText;
+    });
+  }
+  //annotations redraw
+  if(purpose===2 || purpose===1){
     annotations.forEach(annotation => {
       ctx.strokeStyle = annotation.color;
       ctx.lineWidth = 2;
       ctx.globalAlpha = 1.0;
-
       ctx.beginPath();
       const path = annotation.path;
       ctx.moveTo(path[0].x, path[0].y);
@@ -157,15 +174,6 @@ function redraw() {
       ctx.stroke();
     });
   }
-
-  highlights.forEach(highlight => {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = highlight.spanHtml;
-    const span = tempDiv.firstChild;
-    if (span && span.style) {
-      span.style.backgroundColor = highlight.color;
-    }
-  });
 }
 
 createCanvas();
@@ -192,19 +200,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     currentColor = message.color;
   } else if (message.action === "save") {
     console.log("Saving annotations");
-    chrome.runtime.sendMessage({ action: "saveAnnotation", annotations: annotations, highlights: highlights }, (response) => {
+    chrome.runtime.sendMessage({ action: "saveAnnotation", annotat: annotations, high: highlights }, (response) => {
       if (response && response.status === "success") {
         alert("Annotations Saved!");
       }
     });
   } else if (message.action === "undo") {
+    purpose=1;
     console.log("Undoing last annotation");
     console.log(currentAction);
     if (currentAction === 1) {
       if (annotations.length > 0) {
         const lastAnnotation = annotations.pop();
         currentAction = lastAnnotation.lastTask;
-        redraw();
+        redraw(purpose);
       }
     } else if (currentAction === 2) {
       if (highlights.length > 0) {
@@ -214,7 +223,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           span.replaceWith(document.createTextNode(span.textContent));
         }
         currentAction = lastHighlight.lastTask;
-        redraw();
+        redraw(purpose);
       }  
     }
     console.log(currentAction);
