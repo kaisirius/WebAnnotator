@@ -4,9 +4,8 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "saveAnnotation") {
-    console.log("Saving annotations in local storage");
     try {
-      chrome.storage.local.set({ annotations: message.annotation }, () => {
+      chrome.storage.local.set({ annotations: message.annotat ,highlights : message.high}, () => {
         sendResponse({ status: "success" });
       });
     } catch (error) {
@@ -15,8 +14,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     return true; // Indicates that sendResponse will be called asynchronously
   } else if (message.action === "loadAnnotations") {
-    chrome.storage.local.get('annotations', (result) => {
-      sendResponse({ annotations: result.annotations || [] });
+      chrome.storage.local.get(['annotations','highlights'], (result) => {
+      sendResponse({ annotations: result.annotations , highlights: result.highlights});
     });
     return true; // Indicates that sendResponse will be called asynchronously
   }
