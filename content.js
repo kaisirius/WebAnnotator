@@ -127,11 +127,11 @@ function loadAnnotations() {
 
 function loadToolState() {
   chrome.storage.local.get(['PenStatus', 'HighlighterStatus','ColorStatus'], (result) => {
-    if (result.PenStatus) {
+    if (result.PenStatus === true) {
       currentTool = 'pen';
       canvas.style.pointerEvents = 'auto';
       currentColor = result.ColorStatus;
-    } else if (result.HighlighterStatus) {
+    } else if (result.HighlighterStatus === false) {
       currentTool = 'highlighter';
       canvas.style.pointerEvents = 'none';
       currentColor = result.ColorStatus;
@@ -183,6 +183,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "pen") {
     currentTool = message.status2 ? 'pen' : null;
     canvas.style.pointerEvents = message.status2 ? 'auto' : 'none';
+    if(currentTool === 'pen' && (canvas===null || ctx===null)) createCanvas();
   } else if (message.action === "highlighter") {
     currentTool = message.status1 ? 'highlighter' : null;
     canvas.style.pointerEvents = message.status1 ? 'none' : 'none';
