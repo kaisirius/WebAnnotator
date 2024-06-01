@@ -2,16 +2,19 @@
   margin: 5px;
   width: 432px;
   height: 60px; 
-  background-color: aliceblue;
-  display: absolute;
+  border-radius: 15px;
+  background-color:  #743089;
+  box-shadow: 3px 3px 8px 2px#a865b5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .toolbar{
+  margin: 0;
   display: flex;
-  background-color: black;
+  background-color: #743089;
   width: 430px;
   height: 60px;
-  border: solid;
-  border-width: 1px;
   border-radius: 15px;
   position: fixed;
 }
@@ -19,7 +22,8 @@
   margin-bottom: 10px;
   margin-top: 10px;
   margin-left: 24px;
-  background-color: white;
+  color: #743089;
+  box-shadow: 0px 0px 8px 2px #a865b5;
   height: 40px;
   width: 40px;
   border-radius: 15px;
@@ -35,6 +39,8 @@
   margin-top: 10px;
   margin-left: 24px;
   background-color: white;
+  color: #743089;
+  box-shadow: 0px 0px 8px 2px #a865b5;
   height: 40px;
   width: 40px;
   border-radius: 15px;
@@ -50,14 +56,18 @@
   margin-left: 24px;
   width: 80px;
   height: 40px;
+  box-shadow: 0px 0px 8px 2px #a865b5;
 }
 .save{
-  font-size: 19px;
-  font-family:Arial, Helvetica, sans-serif;
-  font-weight: bold;
+  font-size: 18px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
   margin-top: 10px;
   margin-left: 20px;
   background-color: white;
+  color: #743089;
+  box-shadow: 0px 0px 8px 2px #a865b5;
   height: 40px;
   width: 70px;
   border-radius: 12px;
@@ -69,12 +79,15 @@
   opacity: 0.86;
 }
 .undo{
-  font-size: 19px;
-  font-family:Arial, Helvetica, sans-serif;
-  font-weight: bold;
+  font-size: 18px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
   margin-top: 10px;
   margin-left: 15px;
   background-color: white;
+  color: #743089;
+  box-shadow: 0px 0px 8px 2px #a865b5;
   height: 40px;
   width: 70px;
   border-radius: 12px;
