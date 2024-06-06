@@ -9,6 +9,9 @@ let currentAction = 0, lastAction = 0;
 let startX, startY, path;
 let canvas, ctx;
 let purpose = 2; 
+let TextSelecting = false;
+let ClickTime;
+let MouseMovedOrNot = false;
 
 // Create and append the canvas element to the body
 function createCanvas() {
@@ -35,22 +38,36 @@ function createCanvas() {
 function handleMouseDown(e) {
   if (currentTool === 'pen') {
     startDrawing(e);
-  } 
+  } else if (currentTool === 'highlighter') {
+    TextSelecting = true;
+    MouseMovedOrNot = false;
+  }
 }
 
 function handleMouseMove(e) {
   if (currentTool === 'pen' && isDrawing) {
     draw(e);
+  }else if(TextSelecting){
+    MouseMovedOrNot = true;
   }
 }
 
 function handleMouseUp(e) {
   if (currentTool === 'pen' && isDrawing) {
     stopDrawing();
-  } 
+  } else if (currentTool === 'highlighter' && TextSelecting) {
+    TextSelecting = false;
+    if(MouseMovedOrNot){
+      clearTimeout(ClickTime);
+      ClickTime = setTimeout(() => {
+        startHighlighting();
+      }, 200); 
+    }
+  }
 }
 
 function startDrawing(e) {
+  canvas.style.pointerEvents = 'auto';
   isDrawing = true;
   lastAction = currentAction;
   currentAction = 1;
@@ -87,7 +104,7 @@ function stopDrawing() {
   }
 }
 
-function wrapSelectedTextWithSpan(color) {
+function wrapSelectedTextWithSpan(color,notes) {
   let selection = window.getSelection();
   if (selection.rangeCount > 0) {
     let range = selection.getRangeAt(0);
@@ -95,14 +112,16 @@ function wrapSelectedTextWithSpan(color) {
     span.style.backgroundColor = color;
     span.setAttribute('highlight-id', Date.now()); // Assigning a unique identifier
     range.surroundContents(span);
-    highlights.push({ span: span.outerHTML, range: range.toString(), color: color, id: span.getAttribute('highlight-id'),lastTask: lastAction });
+    
+    highlights.push({ span: span.outerHTML, range: range.toString(), color: color, id: span.getAttribute('highlight-id'),note: notes,lastTask: lastAction });
   }
 }
 
 function startHighlighting() {
   if(currentTool === 'highlighter'){
     console.log("again!");
-    wrapSelectedTextWithSpan(currentColor);
+    let note = prompt("Enter a note for this highlight:");
+    wrapSelectedTextWithSpan(currentColor,note);
     lastAction = currentAction;
     currentAction = 2;
     console.log("high!");
@@ -124,7 +143,13 @@ function loadAnnotations() {
     }
   });
 }
-
+function SaveToolState() {
+  chrome.storage.local.set({
+    PenStatus: currentTool === 'pen',
+    HighlighterStatus: currentTool === 'highlighter',
+    ColorStatus: currentColor
+  });
+}
 function loadToolState() {
   chrome.storage.local.get(['PenStatus', 'HighlighterStatus','ColorStatus'], (result) => {
     if (result.PenStatus === true) {
@@ -176,6 +201,7 @@ function redraw(purpose) {
   }
 }
 
+
 createCanvas();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -183,13 +209,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "pen") {
     currentTool = message.status2 ? 'pen' : null;
     canvas.style.pointerEvents = message.status2 ? 'auto' : 'none';
-    if(currentTool === 'pen' && (canvas===null || ctx===null)) createCanvas();
+    SaveToolState();
   } else if (message.action === "highlighter") {
     currentTool = message.status1 ? 'highlighter' : null;
     canvas.style.pointerEvents = message.status1 ? 'none' : 'none';
-
+    SaveToolState();
     if(currentTool === 'highlighter'){
-      document.addEventListener('mousedown',startHighlighting);
+      document.addEventListener('mousedown', handleMouseDown);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('click', (event) => {
+        if (event.target.tagName === 'SPAN' && event.target.hasAttribute('highlight-id')) {
+          let highlightId = event.target.getAttribute('highlight-id');
+          let highlight = highlights.find(h => h.id === highlightId);
+          if (highlight && highlight.note) {
+            alert(`Note: ${highlight.note}`);
+          }
+        }
+      });
     }
     // document.addEventListener('mousedown', () => {
     //   if (currentTool === "highlighter") {
@@ -199,6 +236,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "color") {
     console.log("Setting color to", message.color);
     currentColor = message.color;
+    SaveToolState();
   } else if (message.action === "save") {
     console.log("Saving annotations");
     chrome.runtime.sendMessage({ action: "saveAnnotation", annotat: annotations, high: highlights }, (response) => {
