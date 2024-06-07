@@ -5,7 +5,7 @@ let currentColor = '#FFFF00';
 let annotations = [];
 let highlights = [];
 let isDrawing = false;
-let currentAction = 0, lastAction = 0;
+let Actions = [];
 let startX, startY, path;
 let canvas, ctx;
 let purpose = 2; 
@@ -69,11 +69,7 @@ function handleMouseUp(e) {
 function startDrawing(e) {
   canvas.style.pointerEvents = 'auto';
   isDrawing = true;
-  lastAction = currentAction;
-  currentAction = 1;
   console.log("draw!");
-  console.log(currentAction);
-  console.log(lastAction);
   startX = e.clientX;
   startY = e.clientY;
   path = [{ x: startX, y: startY }];
@@ -100,7 +96,8 @@ function stopDrawing() {
   if (!isDrawing) return;
   isDrawing = false;
   if (path.length > 1) {
-    annotations.push({ tool: 'pen', color: currentColor, path: path, lastTask: lastAction });
+    Actions.push(1);
+    annotations.push({ tool: 'pen', color: currentColor, path: path });
   }
 }
 
@@ -112,8 +109,8 @@ function wrapSelectedTextWithSpan(color,notes) {
     span.style.backgroundColor = color;
     span.setAttribute('highlight-id', Date.now()); // Assigning a unique identifier
     range.surroundContents(span);
-    
-    highlights.push({ span: span.outerHTML, range: range.toString(), color: color, id: span.getAttribute('highlight-id'),note: notes,lastTask: lastAction });
+    Actions.push(2);
+    highlights.push({ span: span.outerHTML, range: range.toString(), color: color, id: span.getAttribute('highlight-id'),note: notes });
   }
 }
 
@@ -122,11 +119,7 @@ function startHighlighting() {
     console.log("again!");
     let note = prompt("Enter a note for this highlight:");
     wrapSelectedTextWithSpan(currentColor,note);
-    lastAction = currentAction;
-    currentAction = 2;
     console.log("high!");
-    console.log(currentAction);
-    console.log(lastAction);
   }
 }
 
@@ -247,11 +240,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "undo") {
     purpose=1;
     console.log("Undoing last annotation");
+    const currentAction = Actions.pop();
     console.log(currentAction);
     if (currentAction === 1) {
       if (annotations.length > 0) {
         const lastAnnotation = annotations.pop();
-        currentAction = lastAnnotation.lastTask;
         redraw(purpose);
       }
     } else if (currentAction === 2) {
@@ -260,11 +253,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const span = document.querySelector(`span[highlight-id="${lastHighlight.id}"]`);
         if (span) {
           span.replaceWith(document.createTextNode(span.textContent));
-        }
-        currentAction = lastHighlight.lastTask;
+        }   
         redraw(purpose);
       }  
     }
-    console.log(currentAction);
   }
 });
