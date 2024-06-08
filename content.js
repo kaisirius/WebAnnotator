@@ -198,7 +198,15 @@ function redraw(purpose) {
 
 
 createCanvas();
-
+document.addEventListener('click', (event) => {
+  if (event.target.tagName === 'SPAN' && event.target.hasAttribute('highlight-id')) {
+    let highlightId = event.target.getAttribute('highlight-id');
+    let highlight = highlights.find(h => h.id === highlightId);
+    if (highlight && highlight.note) {
+      alert(`Note: ${highlight.note}`);
+    }
+  }
+});
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("Received message:", message);
   if (message.action === "pen") {
@@ -211,15 +219,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       document.addEventListener('mousedown', handleMouseDown);
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('click', (event) => {
-        if (event.target.tagName === 'SPAN' && event.target.hasAttribute('highlight-id')) {
-          let highlightId = event.target.getAttribute('highlight-id');
-          let highlight = highlights.find(h => h.id === highlightId);
-          if (highlight && highlight.note) {
-            alert(`Note: ${highlight.note}`);
-          }
-        }
-      });
     }
     // document.addEventListener('mousedown', () => {
     //   if (currentTool === "highlighter") {
