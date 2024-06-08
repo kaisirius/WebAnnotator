@@ -54,7 +54,7 @@ function handleMouseMove(e) {
 
 function handleMouseUp(e) {
   if (currentTool === 'pen' && isDrawing) {
-    stopDrawing();
+    stopDrawing(currentColor);
   } else if (currentTool === 'highlighter' && TextSelecting) {
     TextSelecting = false;
     if(MouseMovedOrNot){
@@ -92,12 +92,12 @@ function draw(e) {
   path.push({ x: startX, y: startY });
 }
 
-function stopDrawing() {
+function stopDrawing(color) {
   if (!isDrawing) return;
   isDrawing = false;
   if (path.length > 1) {
     Actions.push(1);
-    annotations.push({ tool: 'pen', color: currentColor, path: path });
+    annotations.push({ tool: 'pen', color: color, path: path });
   }
 }
 
@@ -136,27 +136,21 @@ function loadAnnotations() {
     }
   });
 }
-function SaveToolState() {
-  chrome.storage.local.set({
-    PenStatus: currentTool === 'pen',
-    HighlighterStatus: currentTool === 'highlighter',
-    ColorStatus: currentColor
-  });
-}
+
 function loadToolState() {
   chrome.storage.local.get(['PenStatus', 'HighlighterStatus','ColorStatus'], (result) => {
     if (result.PenStatus === true) {
       currentTool = 'pen';
       canvas.style.pointerEvents = 'auto';
-      currentColor = result.ColorStatus;
-    } else if (result.HighlighterStatus === false) {
+      currentColor = result.ColorStatus || '#FFFF00';
+    } else if (result.HighlighterStatus === true) {
       currentTool = 'highlighter';
       canvas.style.pointerEvents = 'none';
-      currentColor = result.ColorStatus;
+      currentColor = result.ColorStatus || '#FFFF00';
     } else {
       currentTool = null;
       canvas.style.pointerEvents = 'none';
-      currentColor = result.ColorStatus;
+      currentColor = result.ColorStatus || '#FFFF00';
     }
   });
 }
@@ -164,9 +158,11 @@ function loadToolState() {
 function redraw(purpose) {
   console.log("Redrawing annotations");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+  // console.log(highlights.length); debug kar rha hu
+  // console.log(annotations.length);
   // highlights redraw
-  if(purpose === 2){
+  if(purpose === 2 || purpose === 1){
+    // console.log(555); debug kar rha hu
     highlights.forEach(highlight => {
       let span = document.createElement('span');
       span.innerHTML = highlight.range;
@@ -179,17 +175,23 @@ function redraw(purpose) {
   }
   //annotations redraw
   if(purpose===2 || purpose===1){
+    // console.log(999); debug kar rha hu
+    // let counter=0;
     annotations.forEach(annotation => {
+      // counter=counter+1;
+      // console.log(counter); debugging
       ctx.strokeStyle = annotation.color;
+      console.log(annotation.color);
       ctx.lineWidth = 2;
       ctx.globalAlpha = 1.0;
-      ctx.beginPath();
-      const path = annotation.path;
-      ctx.moveTo(path[0].x, path[0].y);
-      for (let i = 1; i < path.length; i++) {
-        ctx.lineTo(path[i].x, path[i].y);
+      ctx.lineCap = 'round';
+      const paths = annotation.path;
+      for (let i = 1; i < paths.length; i++) {
+        ctx.beginPath();
+        ctx.moveTo(paths[i-1].x, paths[i-1].y);
+        ctx.lineTo(paths[i].x, paths[i].y);
+        ctx.stroke();
       }
-      ctx.stroke();
     });
   }
 }
@@ -202,11 +204,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "pen") {
     currentTool = message.status2 ? 'pen' : null;
     canvas.style.pointerEvents = message.status2 ? 'auto' : 'none';
-    SaveToolState();
   } else if (message.action === "highlighter") {
     currentTool = message.status1 ? 'highlighter' : null;
     canvas.style.pointerEvents = message.status1 ? 'none' : 'none';
-    SaveToolState();
     if(currentTool === 'highlighter'){
       document.addEventListener('mousedown', handleMouseDown);
       document.addEventListener('mousemove', handleMouseMove);
@@ -229,7 +229,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "color") {
     console.log("Setting color to", message.color);
     currentColor = message.color;
-    SaveToolState();
   } else if (message.action === "save") {
     console.log("Saving annotations");
     chrome.runtime.sendMessage({ action: "saveAnnotation", annotat: annotations, high: highlights }, (response) => {
