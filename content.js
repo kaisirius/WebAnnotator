@@ -107,7 +107,7 @@ function wrapSelectedTextWithSpan(color,notes) {
     let range = selection.getRangeAt(0);
     let span = document.createElement('span');
     span.style.backgroundColor = color;
-    span.setAttribute('highlight-id', Date.now()); // Assigning a unique identifier
+    span.setAttribute('highlight-id', Date.now()); 
     range.surroundContents(span);
     Actions.push(2);
     highlights.push({ span: span.outerHTML, range: range.toString(), color: color, id: span.getAttribute('highlight-id'),note: notes });
@@ -125,14 +125,23 @@ function startHighlighting() {
 
 function loadAnnotations() {
   chrome.runtime.sendMessage({ action: "loadAnnotations" }, (response) => {
-    if (response && response.annotations) {
+    if (response && response.annotations) 
+    {
       annotations = response.annotations;
+      purpose=1;
+      redraw(purpose);
+      console.log("Annotations loaded");
+    } 
+    if(response && response.highlights)
+    {
       highlights = response.highlights;
       purpose=2;
       redraw(purpose);
-      console.log("Annotations loaded");
-    } else {
-      console.log("No annotations found");
+      console.log("Highlights loaded");
+    }
+    else 
+    {
+      console.log("KUCH NHI MILA BHAI");
     }
   });
 }
@@ -158,12 +167,17 @@ function loadToolState() {
 function redraw(purpose) {
   console.log("Redrawing annotations");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // console.log(highlights.length); debug kar rha hu
-  // console.log(annotations.length);
+  
+  
   // highlights redraw
-  if(purpose === 2 || purpose === 1){
-    // console.log(555); debug kar rha hu
+  if(purpose === 2){
+    // console.log(highlights.length);
+    // console.log(555); DEBUG KAR RHA HUN
+    // let c=0;
     highlights.forEach(highlight => {
+      // c=c+1;
+      // console.log(c);
+      // console.log(highlight);
       let span = document.createElement('span');
       span.innerHTML = highlight.range;
       span.style.backgroundColor = highlight.color;
@@ -174,24 +188,29 @@ function redraw(purpose) {
     });
   }
   //annotations redraw
-  if(purpose===2 || purpose===1){
-    // console.log(999); debug kar rha hu
+  if(purpose === 1){
+    // console.log(annotations.length);
+    // console.log(999);  DEBUG KAR RHA HUN
     // let counter=0;
     annotations.forEach(annotation => {
+
       // counter=counter+1;
-      // console.log(counter); debugging
+      // console.log(counter); 
+      // console.log(annotation);
       ctx.strokeStyle = annotation.color;
-      console.log(annotation.color);
       ctx.lineWidth = 2;
       ctx.globalAlpha = 1.0;
       ctx.lineCap = 'round';
+      
       const paths = annotation.path;
+      
       for (let i = 1; i < paths.length; i++) {
         ctx.beginPath();
         ctx.moveTo(paths[i-1].x, paths[i-1].y);
         ctx.lineTo(paths[i].x, paths[i].y);
         ctx.stroke();
       }
+      
     });
   }
 }
@@ -236,13 +255,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     });
   } else if (message.action === "undo") {
-    purpose=1;
+    
     console.log("Undoing last annotation");
     const currentAction = Actions.pop();
     console.log(currentAction);
     if (currentAction === 1) {
       if (annotations.length > 0) {
         const lastAnnotation = annotations.pop();
+        purpose=1;
         redraw(purpose);
       }
     } else if (currentAction === 2) {
@@ -251,7 +271,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const span = document.querySelector(`span[highlight-id="${lastHighlight.id}"]`);
         if (span) {
           span.replaceWith(document.createTextNode(span.textContent));
-        }   
+        }  
+        purpose=2; 
         redraw(purpose);
       }  
     }
