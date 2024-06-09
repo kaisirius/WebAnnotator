@@ -41,12 +41,10 @@ These were some general files needed for any type of web-extension. You may need
 
 ## Flowcharts & Diagrams
 
-<div style="display: flex; flex-direction: column; align-items: center;">
-  <img src="images/Chrome-Extension-Architecture.jpg" alt="Architecture Diagram" style="width: 40%;">
-  <p style="text-align: center;"><em>Figure 1: Architecture Diagram</em></p>
-</div>
+![Architecture Diagram](images/Chrome-Extension-Architecture.png)
+*Figure 1: Architecture Diagram*
 
-![Flowchart](flowchart.png)
+![Flowchart](images/flowchart.png)
 *Figure 2: Flowchart*
 
 ---
@@ -55,7 +53,7 @@ These were some general files needed for any type of web-extension. You may need
 
 - **Web-Annotator's front-end is written in HTML, CSS, and JavaScript.** First, let's see how it will look if you load the extension and open it.
 
-    ![Extension's Front-end](frontend1.png)
+    ![Extension's Front-end](images/frontend1.png)
     *Figure 3: Extension's Front-end*
 
 - There are a total of 5 features which include drawing pen, text-highlighter, color-coded, save, and undo options. Let's go through each one of them to see how they work and what's the logic behind it.
@@ -68,8 +66,8 @@ These were some general files needed for any type of web-extension. You may need
         - After this as the mouse moves due to listeners our draw function will be called again and again and we keep on tracking the coordinates and storing them. Basic functions like begin path, move to, line to, and stroke are used. Used 2D context render to keep stroke style equal to the current color and stroke width remain constant.
         - The moment it stops we will push them in the `annotations` stack for further use of saving and undoing.
 
-    ![Pen Tutorial](frontend2.png)
-    *Figure 3: Pen Tutorial*
+    ![Pen Tutorial](images/frontend2.png)
+    *Figure 4: Pen Tutorial*
 
 - **Text-Highlighter With Notes**: Highlighter has nothing to do with canvas because the implementation of it involves DOM manipulation. Here we are changing the background color of selected text. So the event listeners are added to the document object.
     - **Document Event Listeners**: There are 4 listeners added to the document if the current tool is a highlighter. The three are the same as that of pen that is `HandleMouseDown`, `HandleMouseMove`, `HandleMouseUp` with some modifications. The moment mouse up event occurs a prompt appears which takes the input of note associated with the corresponding highlight from the user. The 4th document event listener is of `click` which gives an alert showing the note attached to the highlight.
@@ -77,20 +75,20 @@ These were some general files needed for any type of web-extension. You may need
 
 - **Let's see how it works!**
 
-    ![First Select Then Add Notes](frontend3.png)
-    *Figure 4: First Select Then Add Notes*
+    ![First Select Then Add Notes](images/frontend3.png)
+    *Figure 5: First Select Then Add Notes*
 
-    ![Highlight Tutorial](frontend4.png)
-    *Figure 5: Highlight Tutorial*
+    ![Highlight Tutorial](images/frontend4.png)
+    *Figure 6: Highlight Tutorial*
 
-    ![Pop Up Showing Notes After Clicking On Highlighted Text](frontend5.png)
-    *Figure 6: Pop Up Showing Notes After Clicking On Highlighted Text*
+    ![Pop Up Showing Notes After Clicking On Highlighted Text](images/frontend5.png)
+    *Figure 7: Pop Up Showing Notes After Clicking On Highlighted Text*
 
 - **Customize Color**: This feature is implemented using a simple HTML input element. Listeners were added in popup JavaScript files which store the value of the selected color as a string and pass it to the content script. By default, the color will be yellow. Any RGB value of color can be given too.
 - **Saving & Undoing**: As told in pen and highlighter functionalities that a stack is implemented to store the last stroke of pen and highlighter in two different stacks named `annotations` & `highlights` respectively. These two stacks were passed to the background script to make Chrome API calls and save it in local storage. We will look at the background script in the next section. For Undo one more stack was implemented to have seamless interaction which is `Actions`. This actually stores the value as 1 OR 2. 1 represents that the last action was of pen else if it's 2 then a highlighter was used. Depending on its top value we can know out of other 2 stacks of annotations which has to be popped. A simple redraw function is called out which has the similar logic the way we did pen and highlighter.
 
-    ![Pop-up Showing Annotations Saved](frontend6.png)
-    *Figure 7: Pop-up Showing Annotations Saved*
+    ![Pop-up Showing Annotations Saved](images/frontend6.png)
+    *Figure 8: Pop-up Showing Annotations Saved*
 
 ---
 
