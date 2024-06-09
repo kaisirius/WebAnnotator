@@ -41,11 +41,15 @@ These were some general files needed for any type of web-extension. You may need
 
 ## Flowcharts & Diagrams
 
-![Architecture Diagram](images/Chrome-Extension-Architecture.png)
-*Figure 1: Architecture Diagram*
+<div style="text-align: center;">
+    <img src="images/Chrome-Extension-Architecture.png" alt="Architecture Diagram">
+    <p><em>Figure 1: Architecture Diagram</em></p>
+</div>
 
-![Flowchart](images/flowchart.png)
-*Figure 2: Flowchart*
+<div style="text-align: center;">
+    <img src="images/flowchart.png" alt="Flowchart">
+    <p><em>Figure 2: Flowchart</em></p>
+</div>
 
 ---
 
@@ -53,8 +57,10 @@ These were some general files needed for any type of web-extension. You may need
 
 - **Web-Annotator's front-end is written in HTML, CSS, and JavaScript.** First, let's see how it will look if you load the extension and open it.
 
-    ![Extension's Front-end](images/frontend1.png)
-    *Figure 3: Extension's Front-end*
+<div style="text-align: center;">
+    <img src="images/frontend1.png" alt="Extension's Front-end">
+    <p><em>Figure 3: Extension's Front-end</em></p>
+</div>
 
 - There are a total of 5 features which include drawing pen, text-highlighter, color-coded, save, and undo options. Let's go through each one of them to see how they work and what's the logic behind it.
 - **Drawing Pen**: For implementing a pen I created the canvas which will allow me to draw. Every time a web-page is opened a canvas will be created therefore it's written in content script.
@@ -66,8 +72,10 @@ These were some general files needed for any type of web-extension. You may need
         - After this as the mouse moves due to listeners our draw function will be called again and again and we keep on tracking the coordinates and storing them. Basic functions like begin path, move to, line to, and stroke are used. Used 2D context render to keep stroke style equal to the current color and stroke width remain constant.
         - The moment it stops we will push them in the `annotations` stack for further use of saving and undoing.
 
-    ![Pen Tutorial](images/frontend2.png)
-    *Figure 4: Pen Tutorial*
+<div style="text-align: center;">
+    <img src="images/frontend2.png" alt="Pen Tutorial">
+    <p><em>Figure 4: Pen Tutorial</em></p>
+</div>
 
 - **Text-Highlighter With Notes**: Highlighter has nothing to do with canvas because the implementation of it involves DOM manipulation. Here we are changing the background color of selected text. So the event listeners are added to the document object.
     - **Document Event Listeners**: There are 4 listeners added to the document if the current tool is a highlighter. The three are the same as that of pen that is `HandleMouseDown`, `HandleMouseMove`, `HandleMouseUp` with some modifications. The moment mouse up event occurs a prompt appears which takes the input of note associated with the corresponding highlight from the user. The 4th document event listener is of `click` which gives an alert showing the note attached to the highlight.
@@ -75,38 +83,46 @@ These were some general files needed for any type of web-extension. You may need
 
 - **Let's see how it works!**
 
-    ![First Select Then Add Notes](images/frontend3.png)
-    *Figure 5: First Select Then Add Notes*
+<div style="text-align: center;">
+    <img src="images/frontend3.png" alt="First Select Then Add Notes">
+    <p><em>Figure 5: First Select Then Add Notes</em></p>
+</div>
 
-    ![Highlight Tutorial](images/frontend4.png)
-    *Figure 6: Highlight Tutorial*
+<div style="text-align: center;">
+    <img src="images/frontend4.png" alt="Highlight Tutorial">
+    <p><em>Figure 6: Highlight Tutorial</em></p>
+</div>
 
-    ![Pop Up Showing Notes After Clicking On Highlighted Text](images/frontend5.png)
-    *Figure 7: Pop Up Showing Notes After Clicking On Highlighted Text*
+<div style="text-align: center;">
+    <img src="images/frontend5.png" alt="Pop Up Showing Notes After Clicking On Highlighted Text">
+    <p><em>Figure 7: Pop Up Showing Notes After Clicking On Highlighted Text</em></p>
+</div>
 
 - **Customize Color**: This feature is implemented using a simple HTML input element. Listeners were added in popup JavaScript files which store the value of the selected color as a string and pass it to the content script. By default, the color will be yellow. Any RGB value of color can be given too.
-- **Saving & Undoing**: As told in pen and highlighter functionalities that a stack is implemented to store the last stroke of pen and highlighter in two different stacks named `annotations` & `highlights` respectively. These two stacks were passed to the background script to make Chrome API calls and save it in local storage. We will look at the background script in the next section. For Undo one more stack was implemented to have seamless interaction which is `Actions`. This actually stores the value as 1 OR 2. 1 represents that the last action was of pen else if it's 2 then a highlighter was used. Depending on its top value we can know out of other 2 stacks of annotations which has to be popped. A simple redraw function is called out which has the similar logic the way we did pen and highlighter.
+- **Saving & Undoing**: As told in pen and highlighter functionalities that a stack is implemented to store the last stroke of pen and highlighter in two different stacks named `annotations` & `highlights` respectively. These two stacks play an important role in saving and undoing.
+    - **Saving**: The moment the user clicks on save button the stack of the last annotation path and highlighted text will be sent to the background script via message passing and stored in the chrome local storage.
+    - **Undoing**: The moment the user clicks on undo the last path of annotation or last text highlighted will be popped from the stack and canvas or DOM will be cleared and again the draw function will be called using the stack. In this way, the last change made by the user will be removed and the previous ones will be drawn again. This is the reason behind the implementation of the stack.
 
-    ![Pop-up Showing Annotations Saved](images/frontend6.png)
-    *Figure 8: Pop-up Showing Annotations Saved*
-
+<div style="text-align: center;">
+    <img src="images/frrontend6.png" alt="Pop Up Showing Annotations Saved">
+    <p><em>Figure 7: Pop Up Showing Annotations Saved</em></p>
+</div>
 ---
 
 ## Back-end API Calls
 
-To build this extension Chrome API was used multiple times to pass messages from popup files to content and background scripts and vice-versa.
-
-- **Background Scripts**: The primary job is to maintain the state of extension in our case to make a save and load the annotations on reload. Chrome API was used for sending/receiving messages and storing/retrieving data from local storage.
+- **Content & Background Script**: As mentioned earlier content script is running in context with our Web-page and background script is working in the background to maintain the current state of the extension. Therefore both of them need to interact with each other for saving, loading, and other functionalities. The content script sends the data via message passing and background saves or retrieves it and sends it back to content and vice-versa.
+- **Background Scripts**: The primary job is to maintain the state of the extension in our case to make a save and load the annotations on reload. Chrome API was used for sending/receiving messages and storing/retrieving data from local storage.
 - **Message Passing**: Chrome API provides 2 types of message passing mechanisms. `chrome.runtime.sendMessage()` and `chrome.runtime.onMessage.addListener()`. The first one sends the message to any part of the extension and the second one receives the message in the background. Using these two I passed data between the popup script to the content script and vice versa.
-- **Local Storage**: Two main functions are `chrome.storage.local.set()` and `chrome.storage.local.get()`. First is used to save data into storage and the second one to get it. The data passed is in JSON format and therefore we can store a whole object in JSON format. From the content script, the annotations and highlights stack were sent to the background script via message passing and from the background script using `chrome.storage.local.set()` function data was saved in the local storage. So now every time you reload or revisit the web-page the canvas will be redrawn and the DOM manipulation of the highlight will be performed. This was achieved via `chrome.storage.local.get()` where the annotations and highlights stack will be passed to the content script and the previous drawing functions and DOM manipulation will be called accordingly.
+- **Local Storage**: Two main functions are `chrome.storage.local.set()` and `chrome.storage.local.get()`. The first is used to save data into storage and the second one to get it. The data passed is in JSON format and therefore we can store a whole object in JSON format. From the content script, the annotations and highlights stack were sent to the background script via message passing and from the background script using the `chrome.storage.local.set()` function data was saved in the local storage. So now every time you reload or revisit the web page the canvas will be redrawn and the DOM manipulation of the highlight will be performed. This was achieved via `chrome.storage.local.get()` where the annotations and highlights stack will be passed to the content script and the previous drawing functions and DOM manipulation will be called accordingly.
 
 ---
 
 ## Challenges Faced
 
 - **DOM Manipulation**: There were various challenges faced with respect to DOM manipulation. Selecting text and wrapping it with a span element with a unique id. Making that unique id persistent throughout reloads.
-- **Canvas Redraw**: On reloading the web page redrawing the canvas was difficult because when reloaded, the context of the canvas is lost. Therefore, had to maintain an additional stack to get the coordinates of the previous annotations and call the same draw function again.
-- **Responsive Design**: Making the extension responsive to different web-pages was a challenge. Ensuring that the canvas size is adjusted automatically based on different window sizes was tricky. Had to add various event listeners to resize the canvas on window resize events.
+- **Canvas Redraw**: On reloading the web page, redrawing the canvas was difficult because when reloaded, the context of the canvas is lost. Therefore, had to maintain an additional stack to get the coordinates of the previous annotations and call the same draw function again.
+- **Responsive Design**: Making the extension responsive to different web pages was a challenge. Ensuring that the canvas size is adjusted automatically based on different window sizes was tricky. Had to add various event listeners to resize the canvas on window resize events.
 
 ---
 
