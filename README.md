@@ -41,8 +41,10 @@ These were some general files needed for any type of web-extension. You may need
 
 ## Flowcharts & Diagrams
 
-![Architecture Diagram](Chrome-Extension-Architecture.png)
-*Figure 1: Architecture Diagram*
+<div style="display: flex; flex-direction: column; align-items: center;">
+  <img src="images/Chrome-Extension-Architecture.jpg" alt="Architecture Diagram" style="width: 40%;">
+  <p style="text-align: center;"><em>Figure 1: Architecture Diagram</em></p>
+</div>
 
 ![Flowchart](flowchart.png)
 *Figure 2: Flowchart*
