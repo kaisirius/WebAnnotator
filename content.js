@@ -21,7 +21,8 @@ function CreateCanvas() {
   Canvas.height = window.innerHeight;
   document.body.appendChild(Canvas);
   Ctx = Canvas.getContext('2d');
-
+  Ctx.clearRect(0, 0, Canvas.width, Canvas.height);
+  
   Canvas.addEventListener('mousedown', MouseDown);
   Canvas.addEventListener('mousemove', MouseMove);
   Canvas.addEventListener('mouseup', MouseUp);
@@ -155,7 +156,7 @@ function ReloadToolState() {
     }
   });
 }
-
+//x,y coordinates for pen tracking
 let CurrentX, CurrentY, Path;
 
 function InitiateDrawing(e) {
@@ -259,15 +260,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "undo") {
     
     console.log("Undoing last annotation");
-    const currentAction = Actions.pop();
-    console.log(currentAction);
-    if (currentAction === 1) {
+    const CurrentAction = Actions.pop();
+    console.log(CurrentAction);
+    if (CurrentAction === 1) {
       if (Annotations.length > 0) {
         const lastAnnotation = Annotations.pop();
         purpose=1;
         redraw(purpose);
       }
-    } else if (currentAction === 2) {
+    } else if (CurrentAction === 2) {
       if (Highlights.length > 0) {
         const lastHighlight = Highlights.pop();
         const span = document.querySelector(`span[highlight-id="${lastHighlight.id}"]`);
