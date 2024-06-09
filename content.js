@@ -198,12 +198,26 @@ function WrapSelectedTextWithSpan(color,notes) {
   let selection = window.getSelection();
   if (selection.rangeCount > 0) {
     let range = selection.getRangeAt(0);
-    let span = document.createElement('span');
-    span.style.backgroundColor = color;
-    span.setAttribute('highlight-id', Date.now()); 
-    range.surroundContents(span);
-    Actions.push(2);
-    Highlights.push({ span: span.outerHTML, range: range.toString(), color: color, id: span.getAttribute('highlight-id'),note: notes });
+    const contents = range.cloneContents();
+    const walker = document.createTreeWalker(contents, NodeFilter.SHOW_ALL, null, false);
+    let hasNonTextNode = false;
+    while (walker.nextNode()) {
+      if (walker.currentNode.nodeType !== Node.TEXT_NODE) {
+        hasNonTextNode = true;
+        break;
+      }
+    }
+    if (hasNonTextNode) {
+      alert('Please select only textual content.');
+    } 
+    else{
+      let span = document.createElement('span');
+      span.style.backgroundColor = color;
+      span.setAttribute('highlight-id', Date.now()); 
+      range.surroundContents(span);
+      Actions.push(2);
+      Highlights.push({ span: span.outerHTML, range: range.toString(), color: color, id: span.getAttribute('highlight-id'),note: notes });
+    }
   }
 }
 
